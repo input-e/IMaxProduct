@@ -5,13 +5,13 @@ from bs4 import BeautifulSoup
 
 
 class Day():
-    def __init__(self, group: int, table: BeautifulSoup.Tag):
+    def __init__(self, group: int, table):
         self.group = group
         self.day_date = self.day_date_parse(table)
         self.subject = self.subject_parse(table)
         
 
-    def day_date_parse(self, table: BeautifulSoup.Tag) -> Dict:
+    def day_date_parse(self, table ) -> Dict:
         contain = {'day':'', 'date':''}
         for iteration in range(0, len(table.find_all('tr'))-1):
             if len(table.find_all('tr')[iteration].find_all('td')):
@@ -25,17 +25,29 @@ class Day():
             raise Exception('There is no information about day and data')
 
     
-    def subject_parse(self, table: BeautifulSoup.Tag) ->list:
+    def subject_parse(self, table) ->list:
 
-        def eject_data(row: int, column: int, table: BeautifulSoup.Tag) ->list:
-            count = 0
-            while table.find_all('tr')[row+2].find('td').text.strip() == str(count+1):
-                pass
-        
+        def eject_data(row: int, column: int, table) ->list:
 
+            def define_len(row):
+                len = row+1
+                a = 0
+                while table.find_all('tr')[len+1].find('td').text.strip() == str(a+1):
+                    len += 1
+                    a += 1
+                return len
+
+            list = []
+            for iteration in range(row+2, define_len(row)+1):
+                num = int(table.find_all('tr')[iteration].find('td').text.strip())                  #return number of subject
+                mn_cnt = table.find_all('tr')[iteration].find_all('td')[(column*2)-1].text.strip()  #return main content of subject
+                class_num = table.find_all('tr')[iteration].find_all('td')[(column*2)].text         #return number or numbers of classrooms
+                list.append(Pare(number = num, main_content = mn_cnt, classroom_number=class_num)) # create the object of subject which contained in item of list
+
+            return list
 
          # search for the position of group number in row
-        def find_position(table: BeautifulSoup.Tag) ->int:
+        def find_position(table) ->int:
             for r in range(0, len(table.find_all('tr'))-1):
                 if table.find_all('tr')[r].find('td').text.strip() == '№':
                     for col in range(1, len(table.find_all('tr')[r].find_all('td'))):
@@ -50,11 +62,20 @@ class Day():
 
         
     def show(self):
-        pass
+        print(f'Number of group: {self.group}\n')
+        print('Date: ' + self.day_date['date'] + '\tDay: ' + self.day_date['day'] + '\n')
+        for i in range(0, len(self.subject)):
+            print('############################################')
+            print(self.subject[i].number)
+            print('___________________')
+            print(self.subject[i].main_content)
+            print('\n___________________')
+            print(self.subject[i].classroom_number)
+            print('\n___________________')
 
 
-    class Pare():
-        def __init__(self, number, main_content, classroom_number):
-            self.number = number
-            self.main_content = main_content
-            self.classroom_number = classroom_number
+class Pare():
+    def __init__(self, number: int, main_content: str, classroom_number):
+        self.number = number
+        self.main_content = main_content
+        self.classroom_number = classroom_number
